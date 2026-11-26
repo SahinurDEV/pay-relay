@@ -23,9 +23,10 @@ jobs:
         run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-37.0" > /dev/null
       - name: Unit tests, lint and debug build
         run: ./gradlew testDebugUnitTest lintDebug assembleDebug
+      # Anyone can download this APK from the run page to try a pull request.
       - uses: actions/upload-artifact@v4
         with:
-          name: pay-relay-debug
+          name: pay-relay-debug-${{ github.event.pull_request.number && format('pr{0}', github.event.pull_request.number) || github.sha }}
           path: app/build/outputs/apk/debug/*.apk
       - uses: actions/upload-artifact@v4
         if: failure()

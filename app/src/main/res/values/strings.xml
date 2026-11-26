@@ -89,6 +89,12 @@
     </plurals>
     <string name="clear_history">Clear history</string>
     <string name="cleared">History cleared.</string>
+    <string name="running">Background running</string>
+    <string name="running_hint">Payments arrive at any time, so the app must be allowed to start and run by itself, also after a restart.</string>
+    <string name="running_battery">Allow background running</string>
+    <string name="running_battery_ok">Background running is allowed.</string>
+    <string name="running_autostart">Open %1$s auto-start settings</string>
+    <string name="running_app_info">Open app settings</string>
     <string name="about">About</string>
     <string name="about_privacy">Only messages from bKash, Nagad and Rocket are read. They go to the address above and nowhere else. No ads, no tracking, no other servers.</string>
     <string name="version">Version %1$s</string>

@@ -71,7 +71,12 @@ class MainActivity : ComponentActivity() {
                 }
 
                 if (onSettings) {
-                    SettingsScreen(model = model, onBack = { model.clearNotice(); onSettings = false })
+                    SettingsScreen(
+                        model = model,
+                        background = access.background,
+                        onAllowBackground = ::askToRunInBackground,
+                        onBack = { model.clearNotice(); onSettings = false },
+                    )
                 } else {
                     HomeScreen(
                         model = model,

@@ -80,6 +80,12 @@
     </plurals>
     <string name="clear_history">হিস্ট্রি মুছুন</string>
     <string name="cleared">হিস্ট্রি মোছা হয়েছে।</string>
+    <string name="running">ব্যাকগ্রাউন্ডে চলা</string>
+    <string name="running_hint">পেমেন্ট যেকোনো সময় আসে, তাই অ্যাপটিকে নিজে নিজে চালু হতে আর চলতে দিতে হবে, ফোন রিস্টার্টের পরেও।</string>
+    <string name="running_battery">ব্যাকগ্রাউন্ডে চলার অনুমতি দিন</string>
+    <string name="running_battery_ok">ব্যাকগ্রাউন্ডে চলার অনুমতি দেওয়া আছে।</string>
+    <string name="running_autostart">%1$s-এর অটো-স্টার্ট সেটিংস খুলুন</string>
+    <string name="running_app_info">অ্যাপের সেটিংস খুলুন</string>
     <string name="about">অ্যাপ সম্পর্কে</string>
     <string name="about_privacy">শুধু bKash, Nagad আর Rocket-এর মেসেজ পড়া হয়। সেগুলো উপরের ঠিকানায় যায়, আর কোথাও নয়। কোনো বিজ্ঞাপন, ট্র্যাকিং বা অন্য সার্ভার নেই।</string>
     <string name="version">ভার্সন %1$s</string>

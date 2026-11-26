@@ -22,5 +22,5 @@ Thanks for helping. A few things keep the project easy to trust and maintain.
 ## Pull requests
 
 1. Fork, then branch from `main`.
-2. Make sure the build, tests and lint pass (CI runs them on every pull request).
+2. Make sure the build, tests and lint pass. CI runs them on every pull request and attaches a debug APK to the run, so reviewers can install your change.
 3. Describe what changed and how you tested it. Screenshots help for UI changes.

@@ -1,0 +1,119 @@
+name: Release
+
+# Push a tag like v1.2.0 (or publish a release with that tag on GitHub) and this
+# builds a signed APK and attaches it to the GitHub release.
+#
+# Needs four repository secrets (Settings → Secrets and variables → Actions):
+#   SIGNING_KEYSTORE_BASE64   the release.jks file, base64-encoded
+#   SIGNING_STORE_PASSWORD    keystore password
+#   SIGNING_KEY_ALIAS         key alias (payrelay)
+#   SIGNING_KEY_PASSWORD      key password
+# Always sign with the same key: Android refuses an update signed with another one.
+
+on:
+  push:
+    tags: ["v*.*.*"]
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing tag to build, for example v1.1.0
+        required: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.event.release.tag_name || github.event.inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      TAG: ${{ github.event.release.tag_name || github.event.inputs.tag || github.ref_name }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TAG }}
+
+      - name: Read the version from the tag
+        id: version
+        run: |
+          if [[ ! "$TAG" =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+            echo "::error::Tag $TAG is not of the form v1.2.3"; exit 1
+          fi
+          name="${BASH_REMATCH[1]}.${BASH_REMATCH[2]}.${BASH_REMATCH[3]}"
+          code=$(( BASH_REMATCH[1] * 10000 + BASH_REMATCH[2] * 100 + BASH_REMATCH[3] ))
+          echo "name=$name" >> "$GITHUB_OUTPUT"
+          echo "code=$code" >> "$GITHUB_OUTPUT"
+
+      - name: Check the signing secrets
+        id: signing
+        env:
+          KEYSTORE: ${{ secrets.SIGNING_KEYSTORE_BASE64 }}
+        run: |
+          if [ -z "$KEYSTORE" ]; then
+            # Not an error: a fork, or a release whose APK the maintainer attached by hand.
+            echo "::warning::Signing secrets are not set, so no APK was built. See docs/RELEASING.md."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - if: steps.signing.outputs.ready == 'true'
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - if: steps.signing.outputs.ready == 'true'
+        uses: gradle/actions/setup-gradle@v4
+      - if: steps.signing.outputs.ready == 'true'
+        name: Install Android platform
+        run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-37.0" > /dev/null
+
+      - if: steps.signing.outputs.ready == 'true'
+        name: Prepare signing
+        env:
+          KEYSTORE: ${{ secrets.SIGNING_KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
+        run: |
+          echo "$KEYSTORE" | base64 --decode > "$RUNNER_TEMP/release.jks"
+          {
+            echo "storeFile=$RUNNER_TEMP/release.jks"
+            echo "storePassword=$STORE_PASSWORD"
+            echo "keyAlias=$KEY_ALIAS"
+            echo "keyPassword=$KEY_PASSWORD"
+          } > keystore.properties
+
+      - if: steps.signing.outputs.ready == 'true'
+        name: Test and build the signed APK
+        run: >
+          ./gradlew testDebugUnitTest assembleRelease
+          -PappVersionName=${{ steps.version.outputs.name }}
+          -PappVersionCode=${{ steps.version.outputs.code }}
+
+      - if: steps.signing.outputs.ready == 'true'
+        name: Name the APK and its checksum
+        id: apk
+        run: |
+          file="pay-relay-${{ steps.version.outputs.name }}.apk"
+          cp app/build/outputs/apk/release/app-release.apk "$file"
+          sha256sum "$file" > "$file.sha256"
+          echo "file=$file" >> "$GITHUB_OUTPUT"
+          rm -f keystore.properties "$RUNNER_TEMP/release.jks"
+
+      - if: steps.signing.outputs.ready == 'true'
+        name: Attach to the GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          FILE: ${{ steps.apk.outputs.file }}
+        run: |
+          if ! gh release view "$TAG" > /dev/null 2>&1; then
+            gh release create "$TAG" --title "Pay Relay ${TAG#v}" --generate-notes
+          fi
+          gh release upload "$TAG" "$FILE" "$FILE.sha256" --clobber

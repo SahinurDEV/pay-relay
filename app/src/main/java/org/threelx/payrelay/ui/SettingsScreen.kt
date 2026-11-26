@@ -33,6 +33,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -52,7 +54,9 @@ import org.threelx.payrelay.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen(model: MainViewModel, onBack: () -> Unit) {
+fun SettingsScreen(model: MainViewModel, background: Boolean, onAllowBackground: () -> Unit, onBack: () -> Unit) {
+    val context = LocalContext.current
+    val autoStart = remember { AutoStart.intent(context) }
     val config by model.config.collectAsStateWithLifecycle()
     val busy by model.busy.collectAsStateWithLifecycle()
     val notice by model.notice.collectAsStateWithLifecycle()
@@ -137,6 +141,24 @@ fun SettingsScreen(model: MainViewModel, onBack: () -> Unit) {
                     Text(stringResource(R.string.scan_inbox))
                 }
                 OutlinedButton(onClick = model::clearHistory, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.clear_history)) }
+            }
+
+            Section(stringResource(R.string.running)) {
+                Text(stringResource(R.string.running_hint), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Spacer(Modifier.height(12.dp))
+                if (background) {
+                    Text(stringResource(R.string.running_battery_ok), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
+                } else {
+                    Button(onClick = onAllowBackground, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.running_battery)) }
+                }
+                if (autoStart != null) {
+                    OutlinedButton(onClick = { runCatching { context.startActivity(autoStart) } }, modifier = Modifier.fillMaxWidth().testTag("autostart")) {
+                        Text(stringResource(R.string.running_autostart, AutoStart.maker))
+                    }
+                }
+                OutlinedButton(onClick = { runCatching { context.startActivity(AutoStart.appDetails(context)) } }, modifier = Modifier.fillMaxWidth()) {
+                    Text(stringResource(R.string.running_app_info))
+                }
             }
 
             Section(stringResource(R.string.about)) {

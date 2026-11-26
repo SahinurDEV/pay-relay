@@ -19,8 +19,9 @@ android {
         applicationId = "org.threelx.payrelay"
         minSdk = 26
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0.0"
+        // The release workflow sets these from the git tag (v1.2.3 -> 1.2.3 / 10203).
+        versionCode = (findProperty("appVersionCode") as String?)?.toInt() ?: 10100
+        versionName = (findProperty("appVersionName") as String?) ?: "1.1.0"
     }
 
     signingConfigs {

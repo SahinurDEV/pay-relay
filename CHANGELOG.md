@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.1.0 (2026-11-26)
+
+- Settings → Background running: allow battery exemption and open the phone maker's auto-start screen (Xiaomi, Oppo, Realme, OnePlus, Vivo, Huawei, Honor, Samsung, Asus, Infinix/Tecno) in one tap.
+- A repeated message now shows how its order stands instead of only "Already recorded".
+- Signed release APKs are built by GitHub Actions from each version tag; pull requests get a test APK.
+- Full server guide with Node.js, PHP, Laravel and Python examples (docs/SERVER.md).
+
 ## 1.0.0 (2026-11-26)
 
 First release.
