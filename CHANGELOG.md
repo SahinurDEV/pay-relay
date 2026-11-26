@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.2.0 (2026-11-26)
+
+- Settings shows the saved connection: Connected / Not connected with the last contact time, the store address and the key (hidden, tap Show to see it).
+- **Edit** opens the address and key filled in, to change either one; **Cancel** keeps the old ones. **Test connection** checks the saved ones again.
+
 ## 1.1.0 (2026-11-26)
 
 - Settings → Background running: allow battery exemption and open the phone maker's auto-start screen (Xiaomi, Oppo, Realme, OnePlus, Vivo, Huawei, Honor, Samsung, Asus, Infinix/Tecno) in one tap.

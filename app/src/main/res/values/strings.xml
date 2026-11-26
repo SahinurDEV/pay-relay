@@ -67,7 +67,6 @@
     <string name="server_address">Store address</string>
     <string name="server_address_hint" translatable="false">https://your-store.com/api/payments/sms</string>
     <string name="server_key">Key</string>
-    <string name="server_key_saved">Saved. Type a new one to replace it.</string>
     <string name="server_key_hint">The SMS key set on your store\'s server.</string>
     <string name="show">Show</string>
     <string name="hide">Hide</string>
@@ -79,6 +78,14 @@
     <string name="need_address">Enter the store address. It starts with https://</string>
     <string name="need_https">The address must start with https://</string>
     <string name="need_key">Enter the key.</string>
+    <string name="conn_ok">Connected</string>
+    <string name="conn_problem">Not connected</string>
+    <string name="conn_unchecked">Saved, not checked yet</string>
+    <string name="conn_unchecked_hint">Tap Test connection to check it.</string>
+    <string name="key_unreadable">Saved (cannot be shown, enter it again with Edit)</string>
+    <string name="test_connection">Test connection</string>
+    <string name="edit">Edit</string>
+    <string name="cancel">Cancel</string>
     <string name="options">Options</string>
     <string name="received_only">Only \"money received\" messages</string>
     <string name="received_only_hint">Turn off to pass on every wallet message. Codes and PIN messages never leave the phone.</string>

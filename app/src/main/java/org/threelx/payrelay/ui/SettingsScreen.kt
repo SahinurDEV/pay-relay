@@ -1,6 +1,15 @@
 package org.threelx.payrelay.ui
 
+import android.text.format.DateUtils
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.material3.Surface
+import androidx.compose.ui.text.font.FontFamily
+import org.threelx.payrelay.data.Config
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -61,13 +70,20 @@ fun SettingsScreen(model: MainViewModel, background: Boolean, onAllowBackground:
     val busy by model.busy.collectAsStateWithLifecycle()
     val notice by model.notice.collectAsStateWithLifecycle()
 
+    // A connected app shows the saved connection; "Edit" opens the boxes with it filled in.
+    var editing by rememberSaveable { mutableStateOf(!config.configured) }
     var url by rememberSaveable { mutableStateOf(config.url) }
-    // The key is deliberately not kept across a screen rotation or shown once saved.
-    var key by rememberSaveable { mutableStateOf("") }
+    var key by remember { mutableStateOf("") }
     var showKey by rememberSaveable { mutableStateOf(false) }
 
-    // Once the key is saved it has no reason to stay on screen.
-    LaunchedEffect(notice) { if (notice?.good == true && config.hasKey) key = "" }
+    // A successful save closes the boxes again.
+    LaunchedEffect(notice) {
+        if (notice?.good == true && config.configured) {
+            editing = false
+            key = ""
+            showKey = false
+        }
+    }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -86,32 +102,57 @@ fun SettingsScreen(model: MainViewModel, background: Boolean, onAllowBackground:
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Section(stringResource(R.string.connection)) {
-                OutlinedTextField(
-                    value = url,
-                    onValueChange = { url = it },
-                    label = { Text(stringResource(R.string.server_address)) },
-                    placeholder = { Text(stringResource(R.string.server_address_hint)) },
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri, capitalization = KeyboardCapitalization.None, autoCorrectEnabled = false),
-                    modifier = Modifier.fillMaxWidth().testTag("url"),
-                )
-                Spacer(Modifier.height(12.dp))
-                OutlinedTextField(
-                    value = key,
-                    onValueChange = { key = it },
-                    label = { Text(stringResource(R.string.server_key)) },
-                    supportingText = { Text(stringResource(if (config.hasKey) R.string.server_key_saved else R.string.server_key_hint)) },
-                    singleLine = true,
-                    visualTransformation = if (showKey) VisualTransformation.None else PasswordVisualTransformation(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, autoCorrectEnabled = false),
-                    trailingIcon = {
-                        TextButton(onClick = { showKey = !showKey }) { Text(stringResource(if (showKey) R.string.hide else R.string.show)) }
-                    },
-                    modifier = Modifier.fillMaxWidth().testTag("key"),
-                )
-                Spacer(Modifier.height(12.dp))
-                Button(onClick = { model.saveConnection(url, key) }, enabled = !busy, modifier = Modifier.fillMaxWidth().testTag("save")) {
-                    Text(stringResource(if (busy) R.string.testing else R.string.save_connect))
+                if (!editing) {
+                    ConnectionSummary(
+                        config = config,
+                        savedKey = { model.savedKey() },
+                        busy = busy,
+                        onTest = model::testConnection,
+                        onEdit = {
+                            model.clearNotice()
+                            url = config.url
+                            key = model.savedKey().orEmpty()
+                            showKey = false
+                            editing = true
+                        },
+                    )
+                } else {
+                    OutlinedTextField(
+                        value = url,
+                        onValueChange = { url = it },
+                        label = { Text(stringResource(R.string.server_address)) },
+                        placeholder = { Text(stringResource(R.string.server_address_hint)) },
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri, capitalization = KeyboardCapitalization.None, autoCorrectEnabled = false),
+                        modifier = Modifier.fillMaxWidth().testTag("url"),
+                    )
+                    Spacer(Modifier.height(12.dp))
+                    OutlinedTextField(
+                        value = key,
+                        onValueChange = { key = it },
+                        label = { Text(stringResource(R.string.server_key)) },
+                        supportingText = { Text(stringResource(R.string.server_key_hint)) },
+                        singleLine = true,
+                        visualTransformation = if (showKey) VisualTransformation.None else PasswordVisualTransformation(),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, autoCorrectEnabled = false),
+                        trailingIcon = {
+                            TextButton(onClick = { showKey = !showKey }) { Text(stringResource(if (showKey) R.string.hide else R.string.show)) }
+                        },
+                        modifier = Modifier.fillMaxWidth().testTag("key"),
+                    )
+                    Spacer(Modifier.height(12.dp))
+                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        if (config.configured) {
+                            OutlinedButton(
+                                onClick = { model.clearNotice(); key = ""; editing = false },
+                                enabled = !busy,
+                                modifier = Modifier.weight(1f).testTag("cancel"),
+                            ) { Text(stringResource(R.string.cancel)) }
+                        }
+                        Button(onClick = { model.saveConnection(url, key) }, enabled = !busy, modifier = Modifier.weight(1f).testTag("save")) {
+                            Text(stringResource(if (busy) R.string.testing else R.string.save_connect))
+                        }
+                    }
                 }
                 notice?.let { note ->
                     Spacer(Modifier.height(8.dp))
@@ -121,7 +162,7 @@ fun SettingsScreen(model: MainViewModel, background: Boolean, onAllowBackground:
                         color = if (note.good) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
                         modifier = Modifier.testTag("notice"),
                     )
-                    if (note.canSaveAnyway) {
+                    if (note.canSaveAnyway && editing) {
                         TextButton(onClick = { model.saveConnection(url, key, force = true) }) { Text(stringResource(R.string.save_anyway)) }
                     }
                 }
@@ -179,4 +220,73 @@ private fun Section(title: String, content: @Composable () -> Unit) {
             content()
         }
     }
+}
+
+/** The saved connection, with how it stands right now, and buttons to check or change it. */
+@Composable
+private fun ConnectionSummary(config: Config, savedKey: () -> String?, busy: Boolean, onTest: () -> Unit, onEdit: () -> Unit) {
+    val signals = LocalSignals.current
+    var reveal by rememberSaveable { mutableStateOf(false) }
+    val ok = config.lastError.isBlank() && config.lastContactAt > 0
+    val (title, back, front) = when {
+        config.lastError.isNotBlank() -> Triple(stringResource(R.string.conn_problem), MaterialTheme.colorScheme.errorContainer, MaterialTheme.colorScheme.onErrorContainer)
+        ok -> Triple(stringResource(R.string.conn_ok), signals.good, signals.onGood)
+        else -> Triple(stringResource(R.string.conn_unchecked), signals.warn, signals.onWarn)
+    }
+    Surface(color = back, contentColor = front, shape = RoundedCornerShape(12.dp), modifier = Modifier.fillMaxWidth().testTag("connection")) {
+        Column(Modifier.padding(horizontal = 14.dp, vertical = 12.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(Modifier.size(10.dp).background(front, CircleShape))
+                Spacer(Modifier.width(8.dp))
+                Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+            }
+            val detail = when {
+                config.lastError.isNotBlank() -> config.lastError
+                ok -> stringResource(R.string.status_ok_hint, relative(config.lastContactAt))
+                else -> stringResource(R.string.conn_unchecked_hint)
+            }
+            Spacer(Modifier.height(2.dp))
+            Text(detail, style = MaterialTheme.typography.bodyMedium)
+        }
+    }
+    Spacer(Modifier.height(12.dp))
+    Field(stringResource(R.string.server_address), config.url)
+    val key = savedKey().orEmpty()
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Field(
+            stringResource(R.string.server_key),
+            when {
+                key.isEmpty() -> stringResource(R.string.key_unreadable)
+                reveal -> key
+                else -> "••••••••" + key.takeLast(4)
+            },
+            mono = true,
+            modifier = Modifier.weight(1f),
+        )
+        if (key.isNotEmpty()) TextButton(onClick = { reveal = !reveal }) { Text(stringResource(if (reveal) R.string.hide else R.string.show)) }
+    }
+    Spacer(Modifier.height(12.dp))
+    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        OutlinedButton(onClick = onTest, enabled = !busy, modifier = Modifier.weight(1f).testTag("test")) {
+            Text(stringResource(if (busy) R.string.testing else R.string.test_connection))
+        }
+        Button(onClick = onEdit, enabled = !busy, modifier = Modifier.weight(1f).testTag("edit")) { Text(stringResource(R.string.edit)) }
+    }
+}
+
+@Composable
+private fun Field(label: String, value: String, modifier: Modifier = Modifier, mono: Boolean = false) {
+    Column(modifier.padding(vertical = 4.dp)) {
+        Text(label, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        SelectionContainer {
+            Text(value, style = MaterialTheme.typography.bodyLarge, fontFamily = if (mono) FontFamily.Monospace else null)
+        }
+    }
+}
+
+@Composable
+private fun relative(time: Long): String {
+    val now = System.currentTimeMillis()
+    if (now - time < DateUtils.MINUTE_IN_MILLIS) return stringResource(R.string.just_now)
+    return DateUtils.getRelativeTimeSpanString(time, now, DateUtils.MINUTE_IN_MILLIS, DateUtils.FORMAT_ABBREV_RELATIVE).toString()
 }

@@ -58,7 +58,6 @@
     <string name="connection">কানেকশন</string>
     <string name="server_address">স্টোরের ঠিকানা</string>
     <string name="server_key">কী</string>
-    <string name="server_key_saved">সেভ করা আছে। বদলাতে চাইলে নতুন কী লিখুন।</string>
     <string name="server_key_hint">আপনার স্টোরের সার্ভারে সেট করা SMS কী।</string>
     <string name="show">দেখান</string>
     <string name="hide">লুকান</string>
@@ -70,6 +69,14 @@
     <string name="need_address">স্টোরের ঠিকানা দিন। এটি https:// দিয়ে শুরু হয়।</string>
     <string name="need_https">ঠিকানা অবশ্যই https:// দিয়ে শুরু হতে হবে।</string>
     <string name="need_key">কী দিন।</string>
+    <string name="conn_ok">কানেক্টেড</string>
+    <string name="conn_problem">কানেক্ট নেই</string>
+    <string name="conn_unchecked">সেভ করা আছে, এখনো পরীক্ষা হয়নি</string>
+    <string name="conn_unchecked_hint">পরীক্ষা করতে Test connection চাপুন।</string>
+    <string name="key_unreadable">সেভ করা আছে (দেখানো যাচ্ছে না, Edit চেপে আবার দিন)</string>
+    <string name="test_connection">কানেকশন পরীক্ষা করুন</string>
+    <string name="edit">এডিট করুন</string>
+    <string name="cancel">বাতিল</string>
     <string name="options">অপশন</string>
     <string name="received_only">শুধু \"টাকা পেয়েছেন\" মেসেজ</string>
     <string name="received_only_hint">বন্ধ করলে ওয়ালেটের সব মেসেজ পাঠানো হবে। কোড আর PIN-এর মেসেজ কখনো ফোনের বাইরে যায় না।</string>

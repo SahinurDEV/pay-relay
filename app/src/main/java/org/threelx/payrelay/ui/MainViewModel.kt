@@ -90,6 +90,30 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    /** The saved key in clear, for the owner's own eyes on this phone. */
+    fun savedKey(): String? = app.settings.key()
+
+    /** Checks the saved address and key again. */
+    fun testConnection() {
+        val current = config.value
+        if (!current.configured) return
+        viewModelScope.launch {
+            busy.value = true
+            notice.value = null
+            when (val reply = app.relay.test(current.url, null)) {
+                is Reply.Accepted -> {
+                    app.settings.contactOk()
+                    notice.value = Notice(text(R.string.test_ok), good = true)
+                    app.relay.retryFailed()
+                }
+                is Reply.Refused -> { app.settings.contactFailed(reply.reason); notice.value = Notice(reply.reason, good = false) }
+                is Reply.Rejected -> { app.settings.contactFailed(reply.reason); notice.value = Notice(reply.reason, good = false) }
+                is Reply.Unreachable -> { app.settings.contactFailed(reply.reason); notice.value = Notice(reply.reason, good = false) }
+            }
+            busy.value = false
+        }
+    }
+
     fun scanInbox() {
         viewModelScope.launch {
             busy.value = true

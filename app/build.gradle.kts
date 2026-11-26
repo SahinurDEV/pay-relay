@@ -20,8 +20,8 @@ android {
         minSdk = 26
         targetSdk = 36
         // The release workflow sets these from the git tag (v1.2.3 -> 1.2.3 / 10203).
-        versionCode = (findProperty("appVersionCode") as String?)?.toInt() ?: 10100
-        versionName = (findProperty("appVersionName") as String?) ?: "1.1.0"
+        versionCode = (findProperty("appVersionCode") as String?)?.toInt() ?: 10200
+        versionName = (findProperty("appVersionName") as String?) ?: "1.2.0"
     }
 
     signingConfigs {
