@@ -1,0 +1,33 @@
+name: Bug report
+description: Something does not work as expected
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Please never paste a real wallet message, key or phone number. Replace them with made-up values.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you did, what you expected, and what happened instead.
+    validations:
+      required: true
+  - type: input
+    id: phone
+    attributes:
+      label: Phone and Android version
+      placeholder: e.g. Samsung A15, Android 15
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Pay Relay version
+      description: Shown at the bottom of Settings.
+    validations:
+      required: true
+  - type: dropdown
+    id: wallet
+    attributes:
+      label: Wallet
+      options: [bKash, Nagad, Rocket, Not about a wallet]

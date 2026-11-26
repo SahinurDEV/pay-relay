@@ -1,0 +1,21 @@
+name: New or changed wallet message
+description: A wallet message that Pay Relay does not pass on, or reads wrongly
+labels: [wallet-format]
+body:
+  - type: markdown
+    attributes:
+      value: Replace every phone number, amount, balance and TrxID with made-up values before posting.
+  - type: input
+    id: sender
+    attributes:
+      label: Sender ID shown on the phone
+      placeholder: e.g. bKash, NAGAD, 16216
+    validations:
+      required: true
+  - type: textarea
+    id: message
+    attributes:
+      label: Example message (made-up values)
+      render: text
+    validations:
+      required: true
