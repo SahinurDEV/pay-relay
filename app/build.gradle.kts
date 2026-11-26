@@ -13,7 +13,12 @@ val keystore = Properties().apply { if (keystoreFile.exists()) keystoreFile.inpu
 
 android {
     namespace = "org.threelx.payrelay"
-    compileSdk = 37
+    // Compose 1.13 needs the 37.1 platform (Android 17 QPR1).
+    compileSdk {
+        version = release(37) {
+            minorApiLevel = 1
+        }
+    }
 
     defaultConfig {
         applicationId = "org.threelx.payrelay"
